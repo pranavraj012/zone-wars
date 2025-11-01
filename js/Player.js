@@ -349,8 +349,7 @@ class Player {
             // Draw falling player with transparency
             ctx.save();
             ctx.globalAlpha = alpha;
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            this.drawCharacter(ctx, currentTime);
             
             // Draw respawn timer above player
             ctx.globalAlpha = 1;
@@ -371,7 +370,7 @@ class Player {
             ctx.save();
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = '#666';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            this.drawCharacter(ctx, currentTime);
             ctx.restore();
             return;
         }
@@ -391,53 +390,163 @@ class Player {
         
         // Speed boost effect
         if (this.hasPowerUp('speed')) {
+            ctx.save();
             ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-            ctx.fillRect(this.x - 2, this.y, this.width + 4, this.height);
+            const speedTrails = 3;
+            for (let i = 0; i < speedTrails; i++) {
+                const offset = (i + 1) * 5 * -this.facingDirection;
+                ctx.globalAlpha = 0.3 - (i * 0.1);
+                this.drawCharacter(ctx, currentTime, offset);
+            }
+            ctx.restore();
         }
         
         // Hit flash effect
         const isFlashing = currentTime - this.hitFlashTime < this.hitFlashDuration;
         
-        // Draw player with flash effect
+        ctx.save();
         if (isFlashing && Math.floor(currentTime / 50) % 2 === 0) {
             ctx.fillStyle = '#ffffff'; // Flash white
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffffff';
         } else {
             ctx.fillStyle = this.color;
         }
-        ctx.fillRect(this.x, this.y, this.width, this.height);
         
-        // Draw outline
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        this.drawCharacter(ctx, currentTime);
+        ctx.restore();
+    }
+    
+    drawCharacter(ctx, currentTime, xOffset = 0) {
+        const centerX = this.x + this.width / 2 + xOffset;
+        const bottomY = this.y + this.height;
+        
+        // Animation based on movement
+        const walkCycle = Math.sin(currentTime * 0.01) * (Math.abs(this.velocityX) > 0.5 ? 1 : 0);
+        const jumpSquash = this.isGrounded ? 0 : Math.min(Math.abs(this.velocityY) * 0.5, 3);
+        
+        // Body proportions
+        const headSize = 12;
+        const bodyWidth = 20;
+        const bodyHeight = 20;
+        const legLength = 14;
+        const armLength = 12;
+        
+        // Positions
+        const headY = this.y + headSize / 2;
+        const bodyY = headY + headSize / 2 + 2;
+        const legStartY = bodyY + bodyHeight;
+        
+        // === LEGS ===
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
         
-        // Draw facing direction indicator (eyes/face)
-        const eyeY = this.y + 15;
-        const eyeSize = 5;
+        // Leg animation
+        const legAngle = walkCycle * 0.3;
+        const leftLegX = centerX - 4;
+        const rightLegX = centerX + 4;
         
-        if (this.facingDirection === 1) {
-            // Facing right - eyes on right side
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(this.x + this.width - 12, eyeY, eyeSize, eyeSize);
-            ctx.fillRect(this.x + this.width - 12, eyeY + 10, eyeSize, eyeSize);
+        // Left leg
+        ctx.beginPath();
+        ctx.moveTo(leftLegX, legStartY);
+        ctx.lineTo(leftLegX + Math.sin(legAngle) * 6, legStartY + legLength - jumpSquash);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        
+        // Right leg
+        ctx.beginPath();
+        ctx.moveTo(rightLegX, legStartY);
+        ctx.lineTo(rightLegX - Math.sin(legAngle) * 6, legStartY + legLength - jumpSquash);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        
+        // === BODY (TORSO) ===
+        ctx.fillStyle = this.color;
+        ctx.fillRect(centerX - bodyWidth / 2, bodyY, bodyWidth, bodyHeight);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(centerX - bodyWidth / 2, bodyY, bodyWidth, bodyHeight);
+        
+        // === ARMS ===
+        const armY = bodyY + 5;
+        const armSwing = walkCycle * 0.4;
+        
+        // Left arm
+        ctx.beginPath();
+        ctx.moveTo(centerX - bodyWidth / 2, armY);
+        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 5, armY + armLength);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        // Right arm
+        ctx.beginPath();
+        ctx.moveTo(centerX + bodyWidth / 2, armY);
+        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 5, armY + armLength);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        // === HEAD ===
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(centerX, headY, headSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // === FACE ===
+        // Eyes
+        const eyeOffset = 3;
+        const eyeSize = 3;
+        
+        ctx.fillStyle = '#fff';
+        // Left eye
+        ctx.beginPath();
+        ctx.arc(centerX - eyeOffset, headY - 2, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+        // Right eye
+        ctx.beginPath();
+        ctx.arc(centerX + eyeOffset, headY - 2, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Pupils (look in facing direction)
+        ctx.fillStyle = '#000';
+        const pupilOffset = this.facingDirection * 1;
+        // Left pupil
+        ctx.beginPath();
+        ctx.arc(centerX - eyeOffset + pupilOffset, headY - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Right pupil
+        ctx.beginPath();
+        ctx.arc(centerX + eyeOffset + pupilOffset, headY - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Mouth (smile)
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(centerX, headY + 2, 4, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+        
+        // Weapon indicator (if rapid fire or mega)
+        if (this.hasPowerUp('rapid') || this.hasPowerUp('mega')) {
+            const weaponColor = this.hasPowerUp('mega') ? '#ff00ff' : '#ff8800';
+            ctx.fillStyle = weaponColor;
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
             
-            // Pupils
-            ctx.fillStyle = '#000';
-            ctx.fillRect(this.x + this.width - 9, eyeY + 1, 2, 3);
-            ctx.fillRect(this.x + this.width - 9, eyeY + 11, 2, 3);
-        } else {
-            // Facing left - eyes on left side
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(this.x + 7, eyeY, eyeSize, eyeSize);
-            ctx.fillRect(this.x + 7, eyeY + 10, eyeSize, eyeSize);
+            const weaponX = centerX + (this.facingDirection * bodyWidth / 2);
+            const weaponY = armY + 8;
             
-            // Pupils
-            ctx.fillStyle = '#000';
-            ctx.fillRect(this.x + 7, eyeY + 1, 2, 3);
-            ctx.fillRect(this.x + 7, eyeY + 11, 2, 3);
+            // Draw gun
+            ctx.fillRect(weaponX, weaponY - 2, this.facingDirection * 8, 4);
+            ctx.strokeRect(weaponX, weaponY - 2, this.facingDirection * 8, 4);
         }
-        
-        // Draw directional arrow above player
+    }
+    
+    renderOldVersion(ctx, currentTime) {
+        // Keep old rendering as backup
         const arrowY = this.y - 15;
         const arrowX = this.x + this.width / 2;
         ctx.fillStyle = this.color;
