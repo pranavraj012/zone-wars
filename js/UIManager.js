@@ -401,15 +401,15 @@ class UIManager {
         ctx.textAlign = 'center';
         ctx.strokeStyle = '#0066ff';
         ctx.lineWidth = 8;
-        ctx.strokeText('DOMINATION', width / 2, 150);
-        ctx.fillText('DOMINATION', width / 2, 150);
+        ctx.strokeText('ZONE', width / 2, 150);
+        ctx.fillText('ZONE', width / 2, 150);
         
-        ctx.font = 'bold 36px Arial';
+        ctx.font = 'bold 72px Arial';
         ctx.strokeStyle = '#ff0000';
-        ctx.lineWidth = 4;
-        ctx.strokeText('ARENA', width / 2, 200);
+        ctx.lineWidth = 8;
+        ctx.strokeText('WARS', width / 2, 220);
         ctx.fillStyle = '#ffd700';
-        ctx.fillText('ARENA', width / 2, 200);
+        ctx.fillText('WARS', width / 2, 220);
         
         // Menu items
         const menuY = 300;

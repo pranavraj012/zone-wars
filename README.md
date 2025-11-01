@@ -1,8 +1,8 @@
-# 🎮 Domination Arena
+# 🎮 Zone Wars
 
 A fast-paced 2-player local multiplayer browser game where players compete to capture and hold zones to win!
 
-![Game Version](https://img.shields.io/badge/version-4.0-blue)
+![Game Version](https://img.shields.io/badge/version-1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 🎯 Features
@@ -85,7 +85,7 @@ A fast-paced 2-player local multiplayer browser game where players compete to ca
 ### Play Locally
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/domination-arena.git
+   git clone https://github.com/yourusername/zone-wars.git
    ```
 2. Open `index.html` in a modern web browser
 3. Start playing!
@@ -139,7 +139,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 👏 Credits
 
-Developed with ❤️ using vanilla JavaScript and HTML5 Canvas.
+**Zone Wars** - Developed with ❤️ using vanilla JavaScript and HTML5 Canvas.
 
 ## 🐛 Known Issues
 
