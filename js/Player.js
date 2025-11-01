@@ -23,7 +23,8 @@ class Player {
         // Facing direction
         this.facingDirection = 1; // 1 = right, -1 = left
         
-        // Shooting
+        // Jumping
+        this.wasJumpingLastFrame = false;
         this.shootCooldown = 500; // ms
         this.lastShootTime = 0;
         this.projectileSpeed = 8; // Default, can be updated from settings
@@ -171,16 +172,19 @@ class Player {
             this.velocityX = 0;
         }
         
-        // Jumping - only allow on fresh landing to prevent bunny hopping
-        // Player must have been in the air last frame and grounded this frame, or release and repress jump
+        // Jumping - require jump key to be released and re-pressed (no bunny hopping)
         if (input.jump && this.isGrounded && this.velocityY >= 0) {
-            // Only jump if we just landed (weren't grounded last frame)
-            // This prevents holding jump key to continuously bounce
-            if (!this.wasGroundedLastFrame) {
+            // Only allow jump if:
+            // 1. Player wasn't holding jump last frame (requires release), OR
+            // 2. Player just landed (wasn't grounded last frame)
+            if (!this.wasJumpingLastFrame || !this.wasGroundedLastFrame) {
                 this.velocityY = this.jumpForce * jumpBoost;
                 this.isGrounded = false;
             }
         }
+        
+        // Track jump state for next frame
+        this.wasJumpingLastFrame = input.jump;
         
         // Apply gravity
         if (!this.isGrounded) {
@@ -424,12 +428,13 @@ class Player {
         const centerX = this.x + this.width / 2 + xOffset;
         const bottomY = this.y + this.height;
         
-        // Animation based on movement - faster cycle when running
+        // Animation based on movement - faster and more visible cycle when running
         const isMoving = Math.abs(this.velocityX) > 0.5;
-        const runSpeed = isMoving ? Math.abs(this.velocityX) * 0.3 : 0;
+        const runSpeed = isMoving ? Math.abs(this.velocityX) * 0.4 : 0;
         // Invert animation cycle based on facing direction for natural look
         const animDirection = this.facingDirection;
-        const walkCycle = Math.sin((currentTime * 0.015 + runSpeed * 2) * animDirection) * (isMoving ? 1 : 0);
+        // Increased frequency multiplier (0.02 instead of 0.015) for more visible animation
+        const walkCycle = Math.sin((currentTime * 0.02 + runSpeed * 3) * animDirection) * (isMoving ? 1 : 0);
         const jumpSquash = this.isGrounded ? 0 : Math.min(Math.abs(this.velocityY) * 0.5, 3);
         
         // Body proportions
@@ -449,22 +454,22 @@ class Player {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         
-        // Leg animation - more pronounced when running, adjusted for direction
-        const legAngle = walkCycle * (0.3 + runSpeed * 0.5);
+        // Leg animation - MORE pronounced for better visibility
+        const legAngle = walkCycle * (0.4 + runSpeed * 0.7);
         const leftLegX = centerX - 4;
         const rightLegX = centerX + 4;
         
-        // Left leg (forward when positive walkCycle)
+        // Left leg (forward when positive walkCycle) - increased swing distance to 10
         ctx.beginPath();
         ctx.moveTo(leftLegX, legStartY);
-        ctx.lineTo(leftLegX + Math.sin(legAngle) * 8 * animDirection, legStartY + legLength - jumpSquash);
+        ctx.lineTo(leftLegX + Math.sin(legAngle) * 10 * animDirection, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
-        // Right leg (backward when positive walkCycle)
+        // Right leg (backward when positive walkCycle) - increased swing distance to 10
         ctx.beginPath();
         ctx.moveTo(rightLegX, legStartY);
-        ctx.lineTo(rightLegX - Math.sin(legAngle) * 8 * animDirection, legStartY + legLength - jumpSquash);
+        ctx.lineTo(rightLegX - Math.sin(legAngle) * 10 * animDirection, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
@@ -477,20 +482,20 @@ class Player {
         
         // === ARMS ===
         const armY = bodyY + 5;
-        const armSwing = walkCycle * (0.4 + runSpeed * 0.6);
+        const armSwing = walkCycle * (0.5 + runSpeed * 0.8);
         
         // Arms swing opposite to legs for natural motion
-        // Left arm
+        // Left arm - increased swing distance to 9
         ctx.beginPath();
         ctx.moveTo(centerX - bodyWidth / 2, armY);
-        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 7 * animDirection, armY + armLength);
+        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 9 * animDirection, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
-        // Right arm
+        // Right arm - increased swing distance to 9
         ctx.beginPath();
         ctx.moveTo(centerX + bodyWidth / 2, armY);
-        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 7 * animDirection, armY + armLength);
+        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 9 * animDirection, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
