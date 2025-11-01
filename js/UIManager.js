@@ -450,7 +450,7 @@ class UIManager {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
         ctx.font = '14px Arial';
         ctx.textAlign = 'right';
-        ctx.fillText('v4.0 - Theme Selection', width - 20, height - 20);
+        ctx.fillText('Zone Wars v1.0', width - 20, height - 20);
         
         // Render settings overlay if open
         if (this.settingsOpen) {
@@ -826,61 +826,6 @@ class UIManager {
         ctx.fillStyle = '#ffd700';
         ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('Press ESC to close', width / 2, height - 40);
-    }
-    
-    renderSettings(ctx) {
-        const { width, height } = this.game;
-        
-        // Semi-transparent overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Title
-        ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 48px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('SETTINGS', width / 2, 100);
-        
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#fff';
-        ctx.font = '24px Arial';
-        
-        let y = 200;
-        const leftX = 250;
-        const spacing = 60;
-        
-        // Match Duration
-        ctx.fillText(`Match Duration: ${Math.floor(this.settings.matchDuration / 60)}:${(this.settings.matchDuration % 60).toString().padStart(2, '0')}`, leftX, y);
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.fillText('(60s - 600s)', leftX + 350, y);
-        y += spacing;
-        
-        // Score Threshold
-        ctx.fillStyle = '#fff';
-        ctx.font = '24px Arial';
-        ctx.fillText(`Score to Win: ${this.settings.scoreThreshold} points`, leftX, y);
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.fillText('(50 - 300)', leftX + 350, y);
-        y += spacing;
-        
-        // Show FPS
-        ctx.fillStyle = '#fff';
-        ctx.font = '24px Arial';
-        ctx.fillText(`Show FPS: ${this.settings.showFPS ? 'ON' : 'OFF'}`, leftX, y);
-        y += spacing + 20;
-        
-        // Note
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.font = 'italic 18px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Settings will be customizable in future updates', width / 2, y);
-        
-        // Close instruction
-        ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 20px Arial';
         ctx.fillText('Press ESC to close', width / 2, height - 40);
     }
     
