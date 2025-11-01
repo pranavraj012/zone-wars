@@ -38,6 +38,7 @@ class UIManager {
         // Game Settings
         this.gameSettings = {
             matchDuration: 180,        // seconds (60-600)
+            winScoreThreshold: 200,    // points needed to win (100-500)
             powerUpSpawnRate: 10,      // seconds between spawns (5-30)
             captureSpeed: 1.0,         // multiplier for zone capture speed (0.5-2.0)
             startingHealth: 100,       // player health (50-200)
@@ -53,6 +54,7 @@ class UIManager {
         this.selectedSettingIndex = 0;
         this.settingsList = [
             { key: 'matchDuration', label: 'Match Duration', min: 60, max: 600, step: 30, suffix: 's' },
+            { key: 'winScoreThreshold', label: 'Win Score', min: 100, max: 500, step: 50, suffix: ' pts' },
             { key: 'powerUpSpawnRate', label: 'Power-up Spawn Rate', min: 5, max: 30, step: 5, suffix: 's' },
             { key: 'captureSpeed', label: 'Capture Speed', min: 0.5, max: 2.0, step: 0.25, suffix: 'x' },
             { key: 'startingHealth', label: 'Starting Health', min: 50, max: 200, step: 25, suffix: 'HP' },
@@ -357,8 +359,7 @@ class UIManager {
     
     startGame() {
         this.currentScreen = 'playing';
-        this.game.matchDuration = this.settings.matchDuration;
-        this.game.winScoreThreshold = this.settings.scoreThreshold;
+        // Settings will be applied in restart()
         this.game.restart();
     }
     
@@ -573,7 +574,7 @@ class UIManager {
         const content = [
             'OBJECTIVE:',
             '  • Capture and hold zones to earn points',
-            '  • Player with highest score when timer ends wins!',
+            '  • First to reach score threshold OR highest score when timer ends wins!',
             '',
             'PLAYER 1 CONTROLS:',
             '  • W/A/S/D - Move and Jump',

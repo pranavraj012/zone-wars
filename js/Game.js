@@ -105,6 +105,7 @@ class Game {
     updateMatchSettings() {
         const settings = this.uiManager.gameSettings;
         this.matchDuration = settings.matchDuration;
+        this.winScoreThreshold = settings.winScoreThreshold;
         this.matchStartTime = Date.now();
         this.matchTimeRemaining = this.matchDuration;
     }
@@ -414,7 +415,19 @@ class Game {
         const player1Score = this.player1.getDominationScoreInSeconds();
         const player2Score = this.player2.getDominationScoreInSeconds();
         
-        // Win condition: Timer runs out, highest score wins
+        // Win condition 1: Reach score threshold
+        if (player1Score >= this.winScoreThreshold) {
+            this.gameOver = true;
+            this.winner = this.player1;
+            return;
+        }
+        if (player2Score >= this.winScoreThreshold) {
+            this.gameOver = true;
+            this.winner = this.player2;
+            return;
+        }
+        
+        // Win condition 2: Timer runs out, highest score wins
         if (this.matchTimeRemaining <= 0) {
             this.gameOver = true;
             if (player1Score > player2Score) {
@@ -532,8 +545,8 @@ class Game {
         this.ctx.font = '12px Arial';
         this.ctx.strokeStyle = '#000';
         this.ctx.lineWidth = 2;
-        this.ctx.strokeText('Highest score when time ends wins!', this.width / 2, 55);
-        this.ctx.fillText('Highest score when time ends wins!', this.width / 2, 55);
+        this.ctx.strokeText(`First to ${this.winScoreThreshold} pts OR highest score when time ends wins!`, this.width / 2, 55);
+        this.ctx.fillText(`First to ${this.winScoreThreshold} pts OR highest score when time ends wins!`, this.width / 2, 55);
         
         const barWidth = 400;
         const barHeight = 35;
@@ -550,9 +563,8 @@ class Game {
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(player1BarX, barY, barWidth, barHeight);
         
-        // Calculate progress based on match duration (score per second)
-        const maxExpectedScore = this.matchDuration; // Roughly 1 point per second max
-        const player1Progress = Math.min(this.player1.getDominationScoreInSeconds() / maxExpectedScore, 1);
+        // Calculate progress based on win score threshold
+        const player1Progress = Math.min(this.player1.getDominationScoreInSeconds() / this.winScoreThreshold, 1);
         this.ctx.fillStyle = this.player1.color;
         this.ctx.fillRect(player1BarX, barY, barWidth * player1Progress, barHeight);
         
@@ -576,7 +588,7 @@ class Game {
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(player2BarX, barY, barWidth, barHeight);
         
-        const player2Progress = Math.min(this.player2.getDominationScoreInSeconds() / maxExpectedScore, 1);
+        const player2Progress = Math.min(this.player2.getDominationScoreInSeconds() / this.winScoreThreshold, 1);
         this.ctx.fillStyle = this.player2.color;
         this.ctx.fillRect(player2BarX, barY, barWidth * player2Progress, barHeight);
         
