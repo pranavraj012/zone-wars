@@ -731,22 +731,115 @@ class UIManager {
             ctx.fillText('►', colorBoxX + colorBoxSize + 40, colorBoxY + colorBoxSize / 2 + 10);
         }
         
-        // Preview player sprite
-        const spriteY = y + h - 80;
-        ctx.fillStyle = player.color;
-        ctx.fillRect(x + w / 2 - 15, spriteY, 30, 50);
+        // Preview player character (using new character design)
+        const spriteY = y + h - 100;
+        const spriteCenterX = x + w / 2;
+        const spriteTime = Date.now();
+        
+        this.drawPreviewCharacter(ctx, spriteCenterX, spriteY, player.color, spriteTime);
+        
+        // Player name under character
+        ctx.fillStyle = '#fff';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(player.name, spriteCenterX, spriteY + 60);
+    }
+    
+    drawPreviewCharacter(ctx, centerX, topY, color, currentTime) {
+        // Idle animation
+        const bob = Math.sin(currentTime * 0.002) * 2;
+        const headY = topY + 12 + bob;
+        const bodyY = headY + 12;
+        
+        // Body proportions (same as Player.js)
+        const headSize = 12;
+        const bodyWidth = 20;
+        const bodyHeight = 20;
+        const legLength = 14;
+        const armLength = 12;
+        
+        const legStartY = bodyY + bodyHeight;
+        
+        // === LEGS ===
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        
+        // Static legs
+        const leftLegX = centerX - 4;
+        const rightLegX = centerX + 4;
+        
+        ctx.beginPath();
+        ctx.moveTo(leftLegX, legStartY);
+        ctx.lineTo(leftLegX, legStartY + legLength);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(rightLegX, legStartY);
+        ctx.lineTo(rightLegX, legStartY + legLength);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        
+        // === BODY ===
+        ctx.fillStyle = color;
+        ctx.fillRect(centerX - bodyWidth / 2, bodyY, bodyWidth, bodyHeight);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(centerX - bodyWidth / 2, bodyY, bodyWidth, bodyHeight);
+        
+        // === ARMS ===
+        const armY = bodyY + 5;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX - bodyWidth / 2, armY);
+        ctx.lineTo(centerX - bodyWidth / 2 - 6, armY + armLength);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX + bodyWidth / 2, armY);
+        ctx.lineTo(centerX + bodyWidth / 2 + 6, armY + armLength);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        // === HEAD ===
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(centerX, headY, headSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // === FACE ===
+        const eyeOffset = 3;
+        const eyeSize = 3;
         
         // Eyes
         ctx.fillStyle = '#fff';
-        ctx.fillRect(x + w / 2 - 8, spriteY + 15, 5, 5);
-        ctx.fillRect(x + w / 2 - 8, spriteY + 25, 5, 5);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x + w / 2 - 6, spriteY + 16, 2, 3);
-        ctx.fillRect(x + w / 2 - 6, spriteY + 26, 2, 3);
+        ctx.beginPath();
+        ctx.arc(centerX - eyeOffset, headY - 2, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(centerX + eyeOffset, headY - 2, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
         
-        ctx.fillStyle = '#fff';
-        ctx.font = '14px Arial';
-        ctx.fillText(player.name, x + w / 2, spriteY - 10);
+        // Pupils
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(centerX - eyeOffset, headY - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(centerX + eyeOffset, headY - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Neutral mouth
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 3, headY + 4);
+        ctx.lineTo(centerX + 3, headY + 4);
+        ctx.stroke();
     }
     
     renderPauseMenu(ctx) {

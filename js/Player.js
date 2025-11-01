@@ -421,8 +421,10 @@ class Player {
         const centerX = this.x + this.width / 2 + xOffset;
         const bottomY = this.y + this.height;
         
-        // Animation based on movement
-        const walkCycle = Math.sin(currentTime * 0.01) * (Math.abs(this.velocityX) > 0.5 ? 1 : 0);
+        // Animation based on movement - faster cycle when running
+        const isMoving = Math.abs(this.velocityX) > 0.5;
+        const runSpeed = isMoving ? Math.abs(this.velocityX) * 0.3 : 0;
+        const walkCycle = Math.sin(currentTime * 0.015 + runSpeed * 2) * (isMoving ? 1 : 0);
         const jumpSquash = this.isGrounded ? 0 : Math.min(Math.abs(this.velocityY) * 0.5, 3);
         
         // Body proportions
@@ -442,22 +444,22 @@ class Player {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         
-        // Leg animation
-        const legAngle = walkCycle * 0.3;
+        // Leg animation - more pronounced when running
+        const legAngle = walkCycle * (0.3 + runSpeed * 0.5);
         const leftLegX = centerX - 4;
         const rightLegX = centerX + 4;
         
         // Left leg
         ctx.beginPath();
         ctx.moveTo(leftLegX, legStartY);
-        ctx.lineTo(leftLegX + Math.sin(legAngle) * 6, legStartY + legLength - jumpSquash);
+        ctx.lineTo(leftLegX + Math.sin(legAngle) * 8, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
         // Right leg
         ctx.beginPath();
         ctx.moveTo(rightLegX, legStartY);
-        ctx.lineTo(rightLegX - Math.sin(legAngle) * 6, legStartY + legLength - jumpSquash);
+        ctx.lineTo(rightLegX - Math.sin(legAngle) * 8, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
@@ -470,19 +472,19 @@ class Player {
         
         // === ARMS ===
         const armY = bodyY + 5;
-        const armSwing = walkCycle * 0.4;
+        const armSwing = walkCycle * (0.4 + runSpeed * 0.6);
         
         // Left arm
         ctx.beginPath();
         ctx.moveTo(centerX - bodyWidth / 2, armY);
-        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 5, armY + armLength);
+        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 7, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
         // Right arm
         ctx.beginPath();
         ctx.moveTo(centerX + bodyWidth / 2, armY);
-        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 5, armY + armLength);
+        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 7, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
@@ -499,6 +501,9 @@ class Player {
         // Eyes
         const eyeOffset = 3;
         const eyeSize = 3;
+        
+        // Check if recently hit (within last 500ms)
+        const recentlyHit = (currentTime - this.hitFlashTime) < 500;
         
         ctx.fillStyle = '#fff';
         // Left eye
@@ -522,11 +527,18 @@ class Player {
         ctx.arc(centerX + eyeOffset + pupilOffset, headY - 2, 1.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // Mouth (smile)
+        // Mouth - simple line, frown when hit
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(centerX, headY + 2, 4, 0.2, Math.PI - 0.2);
+        if (recentlyHit) {
+            // Frown when hurt
+            ctx.arc(centerX, headY + 6, 3, Math.PI + 0.3, Math.PI * 2 - 0.3);
+        } else {
+            // Neutral expression - just a small line
+            ctx.moveTo(centerX - 3, headY + 4);
+            ctx.lineTo(centerX + 3, headY + 4);
+        }
         ctx.stroke();
         
         // Weapon indicator (if rapid fire or mega)
