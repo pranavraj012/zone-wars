@@ -57,9 +57,16 @@ class ParticleSystem {
             const p = this.particles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.3; // Gravity
-            p.vx *= 0.98; // Air resistance
-            p.life -= 0.02;
+            // Ambient particles (theme-driven) should not be heavily affected by gravity
+            if (p.ambient) {
+                // Slight upward or drifting motion preserved by their initial vy
+                p.vx *= 0.995; // gentle air drag
+                p.life -= 0.008; // slower fade
+            } else {
+                p.vy += 0.3; // Gravity
+                p.vx *= 0.98; // Air resistance
+                p.life -= 0.02;
+            }
             
             if (p.life <= 0) {
                 this.particles.splice(i, 1);

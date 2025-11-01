@@ -145,8 +145,11 @@ class Player {
             // Apply acceleration in desired direction
             this.velocityX += desiredDir * this.acceleration * speedBoost;
 
-            // Update facing direction
-            this.facingDirection = desiredDir;
+            // Update facing direction only when velocity aligns with desired direction or when nearly stopped
+            // This prevents the visual flip of the run animation while inertia still carries the player
+            if (Math.sign(this.velocityX) === desiredDir || Math.abs(this.velocityX) < 0.5) {
+                this.facingDirection = desiredDir;
+            }
         }
         
         // Apply friction - stronger on ground, less in air
@@ -424,7 +427,9 @@ class Player {
         // Animation based on movement - faster cycle when running
         const isMoving = Math.abs(this.velocityX) > 0.5;
         const runSpeed = isMoving ? Math.abs(this.velocityX) * 0.3 : 0;
-        const walkCycle = Math.sin(currentTime * 0.015 + runSpeed * 2) * (isMoving ? 1 : 0);
+        // Invert animation cycle based on facing direction for natural look
+        const animDirection = this.facingDirection;
+        const walkCycle = Math.sin((currentTime * 0.015 + runSpeed * 2) * animDirection) * (isMoving ? 1 : 0);
         const jumpSquash = this.isGrounded ? 0 : Math.min(Math.abs(this.velocityY) * 0.5, 3);
         
         // Body proportions
@@ -444,22 +449,22 @@ class Player {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         
-        // Leg animation - more pronounced when running
+        // Leg animation - more pronounced when running, adjusted for direction
         const legAngle = walkCycle * (0.3 + runSpeed * 0.5);
         const leftLegX = centerX - 4;
         const rightLegX = centerX + 4;
         
-        // Left leg
+        // Left leg (forward when positive walkCycle)
         ctx.beginPath();
         ctx.moveTo(leftLegX, legStartY);
-        ctx.lineTo(leftLegX + Math.sin(legAngle) * 8, legStartY + legLength - jumpSquash);
+        ctx.lineTo(leftLegX + Math.sin(legAngle) * 8 * animDirection, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
-        // Right leg
+        // Right leg (backward when positive walkCycle)
         ctx.beginPath();
         ctx.moveTo(rightLegX, legStartY);
-        ctx.lineTo(rightLegX - Math.sin(legAngle) * 8, legStartY + legLength - jumpSquash);
+        ctx.lineTo(rightLegX - Math.sin(legAngle) * 8 * animDirection, legStartY + legLength - jumpSquash);
         ctx.lineWidth = 5;
         ctx.stroke();
         
@@ -474,17 +479,18 @@ class Player {
         const armY = bodyY + 5;
         const armSwing = walkCycle * (0.4 + runSpeed * 0.6);
         
+        // Arms swing opposite to legs for natural motion
         // Left arm
         ctx.beginPath();
         ctx.moveTo(centerX - bodyWidth / 2, armY);
-        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 7, armY + armLength);
+        ctx.lineTo(centerX - bodyWidth / 2 - 6 + Math.sin(armSwing) * 7 * animDirection, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
         // Right arm
         ctx.beginPath();
         ctx.moveTo(centerX + bodyWidth / 2, armY);
-        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 7, armY + armLength);
+        ctx.lineTo(centerX + bodyWidth / 2 + 6 - Math.sin(armSwing) * 7 * animDirection, armY + armLength);
         ctx.lineWidth = 4;
         ctx.stroke();
         
